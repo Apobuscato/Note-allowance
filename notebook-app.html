@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyNotebook & Allowance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf6f0;
+    --warm: #f2ebe0;
+    --brown: #3d2b1f;
+    --caramel: #c48a3f;
+    --gold: #e8b86d;
+    --soft: #9b7b5e;
+    --green: #4a7c59;
+    --green-light: #d4edda;
+    --red: #c0392b;
+    --red-light: #fde8e6;
+    --card: #fffcf7;
+    --shadow: 0 4px 24px rgba(61,43,31,0.10);
+    --radius: 18px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    color: var(--brown);
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(196,138,63,0.07) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(74,124,89,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--brown);
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+
+  header h1 span {
+    color: var(--caramel);
+  }
+
+  header p {
+    margin-top: 8px;
+    color: var(--soft);
+    font-size: 0.95rem;
+    font-weight: 300;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .icon {
+    font-size: 1.2rem;
+  }
+
+  /* ── ALLOWANCE SECTION ── */
+  .allowance-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 36px;
+    border: 1.5px solid rgba(196,138,63,0.18);
+  }
+
+  .balance-display {
+    text-align: center;
+    padding: 20px 0 24px;
+  }
+
+  .balance-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 6px;
+  }
+
+  .balance-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 7vw, 3.8rem);
+    font-weight: 900;
+    color: var(--brown);
+    line-height: 1;
+  }
+
+  .balance-amount.zero { color: var(--soft); }
+  .balance-amount.positive { color: var(--green); }
+
+  .allowance-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .allowance-box {
+    background: var(--warm);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .allowance-box label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 10px;
+  }
+
+  .allowance-box .input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .allowance-box input {
+    flex: 1;
+    border: 1.5px solid rgba(61,43,31,0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    background: #fff;
+    color: var(--brown);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .allowance-box input:focus { border-color: var(--caramel); }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .btn:active { transform: scale(0.96); }
+
+  .btn-add {
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-add:hover { background: #3a6847; }
+
+  .btn-deduct {
+    background: var(--red);
+    color: #fff;
+  }
+  .btn-deduct:hover { background: #a93226; }
+
+  .btn-save {
+    background: var(--caramel);
+    color: #fff;
+  }
+  .btn-save:hover { background: #b07834; }
+
+  .btn-edit {
+    background: var(--warm);
+    color: var(--brown);
+    border: 1.5px solid rgba(61,43,31,0.15);
+  }
+  .btn-edit:hover { background: #e8ddd0; }
+
+  .btn-delete {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1.5px solid rgba(192,57,43,0.18);
+  }
+  .btn-delete:hover { background: #f5c6c1; }
+
+  .btn-cancel {
+    background: var(--warm);
+    color: var(--soft);
+    border: 1.5px solid rgba(61,43,31,0.10);
+  }
+
+  /* Transaction history */
+  .tx-history {
+    margin-top: 20px;
+  }
+
+  .tx-history-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 10px;
+  }
+
+  .tx-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+  }
+
+  .tx-list::-webkit-scrollbar { width: 4px; }
+  .tx-list::-webkit-scrollbar-thumb { background: rgba(61,43,31,0.15); border-radius: 2px; }
+
+  .tx-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--warm);
+    font-size: 0.88rem;
+  }
+
+  .tx-item .tx-desc { color: var(--brown); font-weight: 500; }
+  .tx-item .tx-time { color: var(--soft); font-size: 0.75rem; }
+
+  .tx-amount.credit { color: var(--green); font-weight: 700; }
+  .tx-amount.debit { color: var(--red); font-weight: 700; }
+
+  .no-tx {
+    text-align: center;
+    color: var(--soft);
+    font-size: 0.88rem;
+    padding: 16px 0;
+  }
+
+  /* ── NOTES SECTION ── */
+  .notes-section {}
+
+  .notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .btn-new-note {
+    background: var(--caramel);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-new-note:hover { background: #b07834; transform: translateY(-1px); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(61,43,31,0.45);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(61,43,31,0.25);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: var(--brown);
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 8px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    border: 1.5px solid rgba(61,43,31,0.15);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    background: var(--warm);
+    color: var(--brown);
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus { border-color: var(--caramel); background: #fff; }
+
+  .form-group textarea { min-height: 120px; }
+
+  /* Image upload area */
+  .image-upload-area {
+    border: 2px dashed rgba(196,138,63,0.4);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--warm);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .image-upload-area:hover { border-color: var(--caramel); background: rgba(196,138,63,0.05); }
+
+  .image-upload-area .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+
+  .image-upload-area p {
+    color: var(--soft);
+    font-size: 0.88rem;
+  }
+
+  .image-upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: none;
+  }
+
+  .image-preview {
+    margin-top: 12px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .image-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .remove-img {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(192,57,43,0.85);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* Notes grid */
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .note-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1.5px solid rgba(61,43,31,0.07);
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .note-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 36px rgba(61,43,31,0.14);
+  }
+
+  .note-card-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .note-card-body {
+    padding: 18px 18px 14px;
+  }
+
+  .note-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .note-card-text {
+    font-size: 0.87rem;
+    color: var(--soft);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-card-date {
+    font-size: 0.72rem;
+    color: #c4aa8f;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .note-card-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px 16px;
+    border-top: 1px solid rgba(61,43,31,0.06);
+  }
+
+  .note-card-actions .btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .empty-notes {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--soft);
+  }
+
+  .empty-notes .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-notes p { font-size: 1rem; }
+
+  /* ── UTANG SECTION ── */
+  .utang-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+    margin-bottom: 36px;
+    border: 1.5px solid rgba(192,57,43,0.15);
+  }
+
+  .utang-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .utang-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .utang-summary-box {
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .utang-summary-box.owe {
+    background: var(--red-light);
+    border: 1.5px solid rgba(192,57,43,0.15);
+  }
+
+  .utang-summary-box.lend {
+    background: var(--green-light);
+    border: 1.5px solid rgba(74,124,89,0.2);
+  }
+
+  .utang-summary-box .sum-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .utang-summary-box.owe .sum-label { color: var(--red); }
+  .utang-summary-box.lend .sum-label { color: var(--green); }
+
+  .utang-summary-box .sum-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+  }
+
+  .utang-summary-box.owe .sum-amount { color: var(--red); }
+  .utang-summary-box.lend .sum-amount { color: var(--green); }
+
+  .btn-new-utang {
+    background: #7b3f3f;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-new-utang:hover { background: #5e2e2e; transform: translateY(-1px); }
+
+  .utang-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 420px; /* ~5 cards */
+    overflow-y: auto;
+    padding-right: 4px;
+    scroll-behavior: smooth;
+  }
+
+  .utang-list::-webkit-scrollbar { width: 5px; }
+  .utang-list::-webkit-scrollbar-track { background: transparent; }
+  .utang-list::-webkit-scrollbar-thumb { background: rgba(61,43,31,0.18); border-radius: 3px; }
+  .utang-list::-webkit-scrollbar-thumb:hover { background: rgba(61,43,31,0.32); }
+
+  .utang-card {
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+  }
+
+  .utang-card.type-owe {
+    background: #fff5f5;
+    border: 1.5px solid rgba(192,57,43,0.15);
+  }
+
+  .utang-card.type-lend {
+    background: #f4faf6;
+    border: 1.5px solid rgba(74,124,89,0.15);
+  }
+
+  .utang-card.paid {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+  }
+
+  .utang-card .utang-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 50px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .type-owe .utang-badge { background: var(--red-light); color: var(--red); }
+  .type-lend .utang-badge { background: var(--green-light); color: var(--green); }
+
+  .utang-info { flex: 1; min-width: 0; }
+
+  .utang-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--brown);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .utang-reason {
+    font-size: 0.8rem;
+    color: var(--soft);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .utang-due {
+    font-size: 0.75rem;
+    color: #c0392b;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .utang-amount {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+  }
+
+  .type-owe .utang-amount { color: var(--red); }
+  .type-lend .utang-amount { color: var(--green); }
+
+  .utang-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-paid {
+    background: var(--green-light);
+    color: var(--green);
+    border: 1.5px solid rgba(74,124,89,0.2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-paid:hover { background: #b8dfc5; }
+
+  .btn-del-utang {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1.5px solid rgba(192,57,43,0.18);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-del-utang:hover { background: #f5c6c1; }
+
+  .empty-utang {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--soft);
+    font-size: 0.9rem;
+  }
+
+  .empty-utang .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+  /* Utang Modal */
+  .utang-type-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .type-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--warm);
+    color: var(--soft);
+  }
+
+  .type-btn.active-owe {
+    background: var(--red-light);
+    color: var(--red);
+    border-color: rgba(192,57,43,0.3);
+  }
+
+  .type-btn.active-lend {
+    background: var(--green-light);
+    color: var(--green);
+    border-color: rgba(74,124,89,0.3);
+  }
+
+  .btn-new-allowance {
+    background: var(--warm);
+    color: var(--brown);
+    border: 1.5px solid rgba(61,43,31,0.18);
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.87rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-new-allowance:hover { background: #e8ddd0; transform: translateY(-1px); }
+
+  /* ── CUSTOM CONFIRM ── */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(61,43,31,0.45);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .confirm-overlay.open { display: flex; }
+
+  .confirm-box {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 16px 50px rgba(61,43,31,0.25);
+    padding: 28px 28px 22px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    animation: slideUp 0.2s ease;
+  }
+
+  .confirm-box .confirm-icon { font-size: 2.4rem; margin-bottom: 10px; }
+  .confirm-box h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; color: var(--brown); margin-bottom: 8px; }
+  .confirm-box p { font-size: 0.87rem; color: var(--soft); margin-bottom: 22px; line-height: 1.5; }
+
+  .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+
+  /* ── SIGNATURE MODAL ── */
+  .sig-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(61,43,31,0.55);
+    backdrop-filter: blur(5px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .sig-modal-overlay.open { display: flex; }
+
+  .sig-modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 70px rgba(61,43,31,0.3);
+    width: 100%;
+    max-width: 480px;
+    padding: 28px;
+    animation: slideUp 0.25s ease;
+  }
+
+  .sig-modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    color: var(--brown);
+    margin-bottom: 4px;
+  }
+
+  .sig-modal .sig-subtitle {
+    font-size: 0.85rem;
+    color: var(--soft);
+    margin-bottom: 18px;
+  }
+
+  .sig-canvas-wrap {
+    border: 2px solid rgba(61,43,31,0.18);
+    border-radius: 12px;
+    background: #fff;
+    overflow: hidden;
+    cursor: crosshair;
+    position: relative;
+  }
+
+  .sig-canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    touch-action: none;
+  }
+
+  .sig-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #d9cfc5;
+    font-size: 0.9rem;
+    font-style: italic;
+    transition: opacity 0.2s;
+  }
+
+  .sig-tools {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .sig-tools label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--soft);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .btn-clear-sig {
+    background: var(--warm);
+    color: var(--soft);
+    border: 1.5px solid rgba(61,43,31,0.12);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-clear-sig:hover { background: #e8ddd0; }
+
+  .sig-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 18px;
+  }
+
+  /* Signature display on card */
+  .sig-display {
+    margin-top: 8px;
+    background: #fff;
+    border: 1.5px solid rgba(74,124,89,0.2);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sig-display img {
+    max-height: 44px;
+    max-width: 140px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .sig-display-label {
+    font-size: 0.7rem;
+    color: var(--green);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--brown);
+    color: #fff;
+    padding: 12px 26px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    white-space: nowrap;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* ── LOADING SCREEN ── */
+  #loadingScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--brown);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  #loadingScreen.hide {
+    opacity: 0;
+    transform: scale(1.04);
+    pointer-events: none;
+  }
+
+  .loading-icon {
+    font-size: 3.8rem;
+    animation: loadBounce 1.1s ease-in-out infinite alternate;
+    margin-bottom: 18px;
+  }
+
+  @keyframes loadBounce {
+    from { transform: translateY(0) scale(1); }
+    to   { transform: translateY(-12px) scale(1.08); }
+  }
+
+  .loading-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 6vw, 2.6rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .loading-title span { color: var(--gold); }
+
+  .loading-sub {
+    font-size: 0.88rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .loading-bar-wrap {
+    margin-top: 36px;
+    width: 180px;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .loading-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--gold);
+    border-radius: 99px;
+    animation: loadBar 1.8s ease forwards;
+  }
+
+  @keyframes loadBar {
+    0%   { width: 0%; }
+    60%  { width: 75%; }
+    100% { width: 100%; }
+  }
+
+  .loading-credit {
+    position: absolute;
+    bottom: 32px;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .loading-credit strong {
+    color: rgba(255,255,255,0.6);
+    font-weight: 600;
+  }
+
+  /* ── FOOTER ── */
+  .app-footer {
+    text-align: center;
+    padding: 28px 0 10px;
+    font-size: 0.78rem;
+    color: #c4aa8f;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .app-footer strong {
+    color: var(--caramel);
+    font-weight: 600;
+  }
+
+  @media (max-width: 520px) {
+    .allowance-controls { grid-template-columns: 1fr; }
+    .modal { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <div class="loading-icon">📒</div>
+  <div class="loading-title">My <span>Notebook</span><br>& Budget</div>
+  <div class="loading-sub">Inihahanda ang iyong app...</div>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar"></div>
+  </div>
+  <div class="loading-credit">Created by <strong>Apocalipse Buscato</strong></div>
+</div>
+
+<div class="app-wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <h1>My <span>Notebook</span> & Budget</h1>
+    <p>I-track ang iyong notes at pera sa isang lugar 📒</p>
+  </header>
+
+  <!-- ALLOWANCE SECTION -->
+  <div class="allowance-section">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px;">
+      <div class="section-title" style="margin-bottom:0"><span class="icon">💰</span> Allowance Tracker</div>
+      <button class="btn-new-allowance" onclick="openNewAllowanceModal()">🔄 Bagong Allowance</button>
+    </div>
+    <div id="allowancePeriodLabel" style="font-size:0.8rem;color:var(--soft);margin-bottom:14px;"></div>
+
+    <div class="balance-display">
+      <div class="balance-label">Current Balance</div>
+      <div class="balance-amount zero" id="balanceDisplay">₱0.00</div>
+    </div>
+
+    <div class="allowance-controls">
+      <div class="allowance-box">
+        <label>➕ Mag-dagdag ng Pera</label>
+        <input type="text" id="addDesc" placeholder="Saan galing? (hal. Allowance, Bonus...)" style="width:100%;margin-bottom:8px;border:1.5px solid rgba(61,43,31,0.15);border-radius:10px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:0.9rem;background:#fff;color:var(--brown);outline:none;">
+        <div class="input-row">
+          <input type="number" id="addAmount" placeholder="₱ Halaga" min="0" step="0.01">
+          <button class="btn btn-add" onclick="addAllowance()">Dagdag</button>
+        </div>
+      </div>
+      <div class="allowance-box">
+        <label>➖ Mag-bawas / Gastos</label>
+        <input type="text" id="deductDesc" placeholder="Para saan? (hal. Pagkain, Load...)" style="width:100%;margin-bottom:8px;border:1.5px solid rgba(61,43,31,0.15);border-radius:10px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:0.9rem;background:#fff;color:var(--brown);outline:none;">
+        <div class="input-row">
+          <input type="number" id="deductAmount" placeholder="₱ Halaga" min="0" step="0.01">
+          <button class="btn btn-deduct" onclick="deductAllowance()">Bawas</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tx-history">
+      <div class="tx-history-title">Kasaysayan ng Transaksyon</div>
+      <div class="tx-list" id="txList">
+        <div class="no-tx">Wala pang transaksyon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UTANG SECTION -->
+  <div class="utang-section">
+    <div class="utang-header">
+      <div class="section-title" style="margin-bottom:0"><span class="icon">🤝</span> Listahan ng Utang</div>
+      <button class="btn-new-utang" onclick="openUtangModal()"><span>+</span> Bagong Utang</button>
+    </div>
+
+    <div class="utang-summary">
+      <div class="utang-summary-box owe">
+        <div class="sum-label">😬 Ikaw ang may utang</div>
+        <div class="sum-amount" id="totalOwe">₱0.00</div>
+      </div>
+      <div class="utang-summary-box lend">
+        <div class="sum-label">🤲 May utang sa iyo</div>
+        <div class="sum-amount" id="totalLend">₱0.00</div>
+      </div>
+    </div>
+
+    <div class="utang-list" id="utangList">
+      <div class="empty-utang"><div class="empty-icon">🤝</div><p>Wala pang nakalista na utang</p></div>
+    </div>
+  </div>
+
+  <!-- NOTES SECTION -->
+  <div class="notes-section">
+    <div class="notes-header">
+      <div class="section-title"><span class="icon">📝</span> Aking Mga Notes</div>
+      <button class="btn-new-note" onclick="openModal()">
+        <span>+</span> Bagong Note
+      </button>
+    </div>
+    <div class="notes-grid" id="notesGrid">
+      <div class="empty-notes">
+        <div class="empty-icon">📓</div>
+        <p>Wala pang notes. Mag-gawa na ng iyong unang note!</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalIfBackground(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Bagong Note</h2>
+
+    <div class="form-group">
+      <label>Pamagat</label>
+      <input type="text" id="noteTitle" placeholder="Isulat ang pamagat...">
+    </div>
+
+    <div class="form-group">
+      <label>Nilalaman</label>
+      <textarea id="noteContent" placeholder="Isulat ang iyong note dito..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Larawan (opsyonal)</label>
+      <div class="image-upload-area" id="uploadArea">
+        <div class="upload-icon">🖼️</div>
+        <p>I-click para mag-upload ng larawan</p>
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
+      </div>
+      <div class="image-preview" id="imagePreview" style="display:none">
+        <img id="previewImg" src="" alt="Preview">
+        <button class="remove-img" onclick="removeImage()">✕</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Kanselahin</button>
+      <button class="btn btn-save" onclick="saveNote()">💾 I-save</button>
+    </div>
+  </div>
+</div>
+
+<!-- UTANG MODAL -->
+<div class="modal-overlay" id="utangModalOverlay" onclick="closeUtangModalIfBg(event)">
+  <div class="modal">
+    <h2>Bagong Utang</h2>
+
+    <div class="form-group">
+      <label>Uri ng Utang</label>
+      <div class="utang-type-toggle">
+        <button class="type-btn active-owe" id="btnOwe" onclick="setUtangType('owe')">😬 Ako ang may utang</button>
+        <button class="type-btn" id="btnLend" onclick="setUtangType('lend')">🤲 May utang sa akin</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label id="utangPersonLabel">Pangalan ng Pinagkakautangan</label>
+      <input type="text" id="utangPerson" placeholder="hal. Juan, Nanay, Kaibigan...">
+    </div>
+
+    <div class="form-group">
+      <label>Dahilan / Para saan</label>
+      <input type="text" id="utangReason" placeholder="hal. Hiniram para sa load, pagkain...">
+    </div>
+
+    <div class="form-group">
+      <label>Halaga</label>
+      <input type="number" id="utangAmount" placeholder="₱ Halaga" min="0" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Petsa ng Hulog (opsyonal)</label>
+      <input type="date" id="utangDue">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeUtangModal()">Kanselahin</button>
+      <button class="btn btn-save" onclick="saveUtang()">💾 I-save</button>
+    </div>
+  </div>
+  <!-- FOOTER -->
+  <div class="app-footer">Created by <strong>Apocalipse Buscato</strong></div>
+
+</div>
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon">🗑️</div>
+    <h3 id="confirmTitle">I-delete?</h3>
+    <p id="confirmMsg">Sigurado ka ba?</p>
+    <div class="confirm-btns">
+      <button class="btn btn-cancel" id="confirmCancel">Huwag</button>
+      <button class="btn btn-delete" id="confirmOk" style="background:var(--red);color:#fff;">Oo, I-delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ALLOWANCE MODAL -->
+<div class="modal-overlay" id="newAllowanceOverlay" onclick="closeNewAllowanceIfBg(event)">
+  <div class="modal">
+    <h2>🔄 Bagong Allowance Period</h2>
+    <p style="font-size:0.88rem;color:var(--soft);margin-bottom:20px;line-height:1.55;">
+      Ire-reset ang iyong balance at transaction history para sa bagong allowance period. Ang lumang history ay mase-save bilang archive.
+    </p>
+
+    <div class="form-group">
+      <label>Pangalan ng Period</label>
+      <input type="text" id="newPeriodName" placeholder="hal. Abril 2025, Week 1, Unang Sem...">
+    </div>
+
+    <div class="form-group">
+      <label>Panimulang Halaga (opsyonal)</label>
+      <input type="number" id="newPeriodAmount" placeholder="₱ Halaga ng bagong allowance" min="0" step="0.01">
+    </div>
+
+    <div style="background:var(--red-light);border-radius:10px;padding:12px 14px;margin-bottom:4px;font-size:0.84rem;color:var(--red);">
+      ⚠️ Ang kasalukuyang balance at transaksyon ay ililipat sa archive. Hindi ito mabubura.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeNewAllowanceModal()">Kanselahin</button>
+      <button class="btn btn-save" onclick="confirmNewAllowance()">🔄 Magsimula Ulit</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNATURE MODAL -->
+<div class="sig-modal-overlay" id="sigModalOverlay" onclick="closeSigModalIfBg(event)">
+  <div class="sig-modal">
+    <h2>✍️ Pirma ng Nagbayad</h2>
+    <div class="sig-subtitle" id="sigSubtitle">Pakiusap pumirma si <strong></strong> bilang patunay ng bayad</div>
+
+    <div class="sig-canvas-wrap">
+      <canvas id="sigCanvas" height="180"></canvas>
+      <div class="sig-placeholder" id="sigPlaceholder">Pumirma dito...</div>
+    </div>
+
+    <div class="sig-tools">
+      <label>Lapis:</label>
+      <input type="color" id="sigColor" value="#1a1a2e" style="width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;padding:0;">
+      <input type="range" id="sigSize" min="1" max="8" value="2.5" step="0.5" style="width:80px;">
+      <button class="btn-clear-sig" onclick="clearSig()">🗑️ Burahin</button>
+    </div>
+
+    <div class="sig-actions">
+      <button class="btn btn-cancel" onclick="closeSigModal()">Kanselahin</button>
+      <button class="btn btn-save" onclick="confirmSig()">✅ Kumpirmahin ang Bayad</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── STATE ──
+  let balance = parseFloat(localStorage.getItem('balance') || '0');
+  let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+  let archivedPeriods = JSON.parse(localStorage.getItem('archivedPeriods') || '[]');
+  let currentPeriod = localStorage.getItem('currentPeriod') || '';
+  let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+  let utangs = JSON.parse(localStorage.getItem('utangs') || '[]');
+  let currentImageData = null;
+  let editingNoteId = null;
+  let currentUtangType = 'owe';
+
+  // ── INIT (handled by async BOOT below) ──
+
+  // ── NEW ALLOWANCE PERIOD ──
+  function updatePeriodLabel() {
+    const el = document.getElementById('allowancePeriodLabel');
+    if (currentPeriod) {
+      el.textContent = `📌 Kasalukuyang Period: ${currentPeriod}`;
+    } else {
+      el.textContent = '';
+    }
+  }
+
+  function openNewAllowanceModal() {
+    document.getElementById('newPeriodName').value = '';
+    document.getElementById('newPeriodAmount').value = '';
+    document.getElementById('newAllowanceOverlay').classList.add('open');
+  }
+
+  function closeNewAllowanceModal() {
+    document.getElementById('newAllowanceOverlay').classList.remove('open');
+  }
+
+  function closeNewAllowanceIfBg(e) {
+    if (e.target === document.getElementById('newAllowanceOverlay')) closeNewAllowanceModal();
+  }
+
+  function confirmNewAllowance() {
+    const periodName = document.getElementById('newPeriodName').value.trim();
+    const startAmount = parseFloat(document.getElementById('newPeriodAmount').value) || 0;
+    if (!periodName) return showToast('Ilagay ang pangalan ng period!');
+
+    // Archive current period
+    if (transactions.length > 0 || balance !== 0) {
+      archivedPeriods.unshift({
+        name: currentPeriod || 'Nakaraang Period',
+        balance,
+        transactions: [...transactions],
+        archivedAt: new Date().toLocaleDateString('fil-PH')
+      });
+    }
+
+    // Reset
+    balance = startAmount;
+    transactions = [];
+    currentPeriod = periodName;
+
+    // Add opening entry if there's a starting amount
+    if (startAmount > 0) {
+      transactions.push({
+        type: 'credit',
+        amount: startAmount,
+        desc: `Panimulang allowance — ${periodName}`,
+        date: new Date().toLocaleString('fil-PH')
+      });
+    }
+
+    saveData();
+    updateBalanceDisplay();
+    renderTransactions();
+    updatePeriodLabel();
+    closeNewAllowanceModal();
+    showToast(`🎉 Bagong period na! "${periodName}" nagsimula na.`);
+  }
+
+  // ── ALLOWANCE ──
+  function addAllowance() {
+    const val = parseFloat(document.getElementById('addAmount').value);
+    const desc = document.getElementById('addDesc').value.trim() || 'Walang label';
+    if (!val || val <= 0) return showToast('Ilagay ang tamang halaga!');
+    balance += val;
+    const tx = { type: 'credit', amount: val, desc, date: new Date().toLocaleString('fil-PH') };
+    transactions.unshift(tx);
+    saveData();
+    document.getElementById('addAmount').value = '';
+    document.getElementById('addDesc').value = '';
+    updateBalanceDisplay();
+    renderTransactions();
+    showToast(`₱${fmt(val)} nadagdag! 🎉`);
+  }
+
+  function deductAllowance() {
+    const val = parseFloat(document.getElementById('deductAmount').value);
+    const desc = document.getElementById('deductDesc').value.trim() || 'Walang label';
+    if (!val || val <= 0) return showToast('Ilagay ang tamang halaga!');
+    if (val > balance) return showToast('Hindi sapat ang balance! 😅');
+    balance -= val;
+    const tx = { type: 'debit', amount: val, desc, date: new Date().toLocaleString('fil-PH') };
+    transactions.unshift(tx);
+    saveData();
+    document.getElementById('deductAmount').value = '';
+    document.getElementById('deductDesc').value = '';
+    updateBalanceDisplay();
+    renderTransactions();
+    showToast(`₱${fmt(val)} nabawas — ${desc}`);
+  }
+
+  function updateBalanceDisplay() {
+    const el = document.getElementById('balanceDisplay');
+    el.textContent = `₱${fmt(balance)}`;
+    el.className = 'balance-amount ' + (balance <= 0 ? 'zero' : 'positive');
+  }
+
+  function renderTransactions() {
+    const list = document.getElementById('txList');
+    if (transactions.length === 0) {
+      list.innerHTML = '<div class="no-tx">Wala pang transaksyon</div>';
+      return;
+    }
+    list.innerHTML = transactions.slice(0, 20).map(tx => `
+      <div class="tx-item">
+        <div>
+          <div class="tx-desc">${tx.type === 'credit' ? '➕' : '➖'} <strong>${escHtml(tx.desc || (tx.type === 'credit' ? 'Nadagdag' : 'Nagastos'))}</strong></div>
+          <div class="tx-time">${tx.date}</div>
+        </div>
+        <div class="tx-amount ${tx.type === 'credit' ? 'credit' : 'debit'}">
+          ${tx.type === 'credit' ? '+' : '-'}₱${fmt(tx.amount)}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── NOTES ──
+  function openModal(id = null) {
+    editingNoteId = id;
+    document.getElementById('modalTitle').textContent = id ? 'I-edit ang Note' : 'Bagong Note';
+    if (id !== null) {
+      const note = notes.find(n => n.id === id);
+      document.getElementById('noteTitle').value = note.title;
+      document.getElementById('noteContent').value = note.content;
+      if (note.image) {
+        currentImageData = note.image;
+        document.getElementById('previewImg').src = note.image;
+        document.getElementById('imagePreview').style.display = 'inline-block';
+        document.getElementById('uploadArea').style.display = 'none';
+      } else {
+        currentImageData = null;
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('uploadArea').style.display = 'block';
+      }
+    } else {
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteContent').value = '';
+      currentImageData = null;
+      document.getElementById('imagePreview').style.display = 'none';
+      document.getElementById('uploadArea').style.display = 'block';
+    }
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.getElementById('imageInput').value = '';
+  }
+
+  function closeModalIfBackground(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      currentImageData = ev.target.result;
+      document.getElementById('previewImg').src = currentImageData;
+      document.getElementById('imagePreview').style.display = 'inline-block';
+      document.getElementById('uploadArea').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    currentImageData = null;
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('imageInput').value = '';
+  }
+
+  function saveNote() {
+    const title = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteContent').value.trim();
+    if (!title && !content) return showToast('Ilagay ang pamagat o nilalaman!');
+
+    if (editingNoteId !== null) {
+      const idx = notes.findIndex(n => n.id === editingNoteId);
+      notes[idx] = { ...notes[idx], title, content, image: currentImageData, edited: new Date().toLocaleDateString('fil-PH') };
+      showToast('Note na-update! ✏️');
+    } else {
+      notes.unshift({
+        id: Date.now(),
+        title: title || 'Walang Pamagat',
+        content,
+        image: currentImageData,
+        date: new Date().toLocaleDateString('fil-PH')
+      });
+      showToast('Note na-save! 📝');
+    }
+
+    saveData();
+    renderNotes();
+    closeModal();
+  }
+
+  function deleteNote(id) {
+    customConfirm({
+      icon: '📓',
+      title: 'I-delete ang note?',
+      msg: 'Matatanggal na ang note na ito. Hindi na ito mababawi.',
+      okLabel: 'Oo, I-delete',
+      onOk: () => {
+        notes = notes.filter(n => n.id !== id);
+        saveData();
+        renderNotes();
+        showToast('Note na-delete 🗑️');
+      }
+    });
+  }
+
+  function renderNotes() {
+    const grid = document.getElementById('notesGrid');
+    if (notes.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-notes">
+          <div class="empty-icon">📓</div>
+          <p>Wala pang notes. Mag-gawa na ng iyong unang note!</p>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = notes.map(note => `
+      <div class="note-card">
+        ${note.image ? `<img class="note-card-img" src="${note.image}" alt="Note image">` : ''}
+        <div class="note-card-body">
+          <div class="note-card-title">${escHtml(note.title)}</div>
+          <div class="note-card-text">${escHtml(note.content)}</div>
+          <div class="note-card-date">${note.edited ? '✏️ Na-edit: ' + note.edited : '📅 ' + note.date}</div>
+        </div>
+        <div class="note-card-actions">
+          <button class="btn btn-edit" onclick="openModal(${note.id})">✏️ I-edit</button>
+          <button class="btn btn-delete" onclick="deleteNote(${note.id})">🗑️ I-delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── UTANG ──
+  function openUtangModal() {
+    currentUtangType = 'owe';
+    setUtangType('owe');
+    document.getElementById('utangPerson').value = '';
+    document.getElementById('utangReason').value = '';
+    document.getElementById('utangAmount').value = '';
+    document.getElementById('utangDue').value = '';
+    document.getElementById('utangModalOverlay').classList.add('open');
+  }
+
+  function closeUtangModal() {
+    document.getElementById('utangModalOverlay').classList.remove('open');
+  }
+
+  function closeUtangModalIfBg(e) {
+    if (e.target === document.getElementById('utangModalOverlay')) closeUtangModal();
+  }
+
+  function setUtangType(type) {
+    currentUtangType = type;
+    document.getElementById('btnOwe').className = 'type-btn' + (type === 'owe' ? ' active-owe' : '');
+    document.getElementById('btnLend').className = 'type-btn' + (type === 'lend' ? ' active-lend' : '');
+    document.getElementById('utangPersonLabel').textContent =
+      type === 'owe' ? 'Pangalan ng Pinagkakautangan' : 'Pangalan ng May Utang sa Iyo';
+  }
+
+  function saveUtang() {
+    const person = document.getElementById('utangPerson').value.trim();
+    const reason = document.getElementById('utangReason').value.trim();
+    const amount = parseFloat(document.getElementById('utangAmount').value);
+    const due = document.getElementById('utangDue').value;
+    if (!person) return showToast('Ilagay ang pangalan!');
+    if (!amount || amount <= 0) return showToast('Ilagay ang tamang halaga!');
+    utangs.unshift({
+      id: Date.now(),
+      type: currentUtangType,
+      person,
+      reason: reason || 'Walang dahilan',
+      amount,
+      due: due || null,
+      paid: false,
+      date: new Date().toLocaleDateString('fil-PH')
+    });
+    saveData();
+    renderUtangs();
+    closeUtangModal();
+    showToast(`Utang ni ${person} naitala! 📋`);
+  }
+
+  function togglePaid(id) {
+    const u = utangs.find(u => u.id === id);
+    if (!u) return;
+    if (!u.paid) {
+      // Only ask for signature on lend type (someone owes YOU)
+      if (u.type === 'lend') {
+        openSigModal(id);
+        return;
+      }
+      // For owe type, just mark paid directly
+      u.paid = true;
+      u.paidDate = new Date().toLocaleDateString('fil-PH');
+      saveData();
+      renderUtangs();
+      showToast('✅ Nabayaran na!');
+    } else {
+      customConfirm({
+        icon: '↩️',
+        title: 'I-undo ang bayad?',
+        msg: 'Matatanggal ang pirma at mark-as-paid ng utang na ito.',
+        okLabel: 'Oo, I-undo',
+        onOk: () => {
+          u.paid = false;
+          u.signature = null;
+          u.paidDate = null;
+          saveData();
+          renderUtangs();
+          showToast('↩️ Binawi ang bayad');
+        }
+      });
+    }
+  }
+
+  // ── SIGNATURE ──
+  let sigUtangId = null;
+  let sigCanvas, sigCtx, sigDrawing = false, sigHasMark = false;
+
+  function openSigModal(id) {
+    sigUtangId = id;
+    const u = utangs.find(u => u.id === id);
+    document.querySelector('#sigSubtitle strong').textContent = u.person;
+    document.getElementById('sigModalOverlay').classList.add('open');
+
+    sigCanvas = document.getElementById('sigCanvas');
+    // Set actual pixel size
+    sigCanvas.width = sigCanvas.offsetWidth || 420;
+    sigCtx = sigCanvas.getContext('2d');
+    clearSig();
+
+    // Mouse events
+    sigCanvas.onmousedown = (e) => { sigDrawing = true; startSigPath(e.offsetX, e.offsetY); };
+    sigCanvas.onmousemove = (e) => { if (sigDrawing) drawSigPath(e.offsetX, e.offsetY); };
+    sigCanvas.onmouseup = () => { sigDrawing = false; sigCtx.beginPath(); };
+    sigCanvas.onmouseleave = () => { sigDrawing = false; sigCtx.beginPath(); };
+
+    // Touch events
+    sigCanvas.ontouchstart = (e) => {
+      e.preventDefault();
+      sigDrawing = true;
+      const r = sigCanvas.getBoundingClientRect();
+      const t = e.touches[0];
+      startSigPath(t.clientX - r.left, t.clientY - r.top);
+    };
+    sigCanvas.ontouchmove = (e) => {
+      e.preventDefault();
+      if (!sigDrawing) return;
+      const r = sigCanvas.getBoundingClientRect();
+      const t = e.touches[0];
+      drawSigPath(t.clientX - r.left, t.clientY - r.top);
+    };
+    sigCanvas.ontouchend = () => { sigDrawing = false; sigCtx.beginPath(); };
+  }
+
+  function startSigPath(x, y) {
+    sigHasMark = true;
+    document.getElementById('sigPlaceholder').style.opacity = '0';
+    sigCtx.beginPath();
+    sigCtx.moveTo(x, y);
+  }
+
+  function drawSigPath(x, y) {
+    sigCtx.lineWidth = parseFloat(document.getElementById('sigSize').value);
+    sigCtx.strokeStyle = document.getElementById('sigColor').value;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+    sigCtx.lineTo(x, y);
+    sigCtx.stroke();
+    sigCtx.beginPath();
+    sigCtx.moveTo(x, y);
+  }
+
+  function clearSig() {
+    sigCtx = sigCanvas.getContext('2d');
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    sigHasMark = false;
+    document.getElementById('sigPlaceholder').style.opacity = '1';
+    sigCtx.beginPath();
+  }
+
+  function closeSigModal() {
+    document.getElementById('sigModalOverlay').classList.remove('open');
+    sigUtangId = null;
+  }
+
+  function closeSigModalIfBg(e) {
+    if (e.target === document.getElementById('sigModalOverlay')) closeSigModal();
+  }
+
+  function confirmSig() {
+    if (!sigHasMark) return showToast('Pumirma muna bago kumpirmahin!');
+    const u = utangs.find(u => u.id === sigUtangId);
+    if (!u) return;
+    u.paid = true;
+    u.paidDate = new Date().toLocaleDateString('fil-PH');
+    u.signature = sigCanvas.toDataURL('image/png');
+    saveData();
+    renderUtangs();
+    closeSigModal();
+    showToast(`✅ Nabayaran na ni ${u.person}! Pirma naka-save. 🎉`);
+  }
+
+  function deleteUtang(id) {
+    customConfirm({
+      icon: '🗑️',
+      title: 'I-delete ang utang?',
+      msg: 'Matatanggal na ang entry na ito. Hindi na ito mababawi.',
+      okLabel: 'Oo, I-delete',
+      onOk: () => {
+        utangs = utangs.filter(u => u.id !== id);
+        saveData();
+        renderUtangs();
+        showToast('Utang na-delete 🗑️');
+      }
+    });
+  }
+
+  function renderUtangs() {
+    const list = document.getElementById('utangList');
+    const totalOwe = utangs.filter(u => u.type === 'owe' && !u.paid).reduce((s, u) => s + u.amount, 0);
+    const totalLend = utangs.filter(u => u.type === 'lend' && !u.paid).reduce((s, u) => s + u.amount, 0);
+    document.getElementById('totalOwe').textContent = `₱${fmt(totalOwe)}`;
+    document.getElementById('totalLend').textContent = `₱${fmt(totalLend)}`;
+
+    if (utangs.length === 0) {
+      list.innerHTML = '<div class="empty-utang"><div class="empty-icon">🤝</div><p>Wala pang nakalista na utang</p></div>';
+      return;
+    }
+
+    list.innerHTML = utangs.map(u => {
+      const dueStr = u.due ? `📅 Hulog: ${new Date(u.due).toLocaleDateString('fil-PH')}` : '';
+      const badge = u.type === 'owe' ? 'Ikaw may utang' : 'May utang sa iyo';
+      const paidBadge = u.paid ? `<span style="background:#d4edda;color:#4a7c59;font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:50px;letter-spacing:1px;text-transform:uppercase;margin-left:6px;">✅ Bayad na${u.paidDate ? ' · ' + u.paidDate : ''}</span>` : '';
+      const sigHtml = (u.paid && u.signature)
+        ? `<div class="sig-display"><div class="sig-display-label">✍️ Pirma:</div><img src="${u.signature}" alt="Signature"></div>`
+        : '';
+      const toggleLabel = u.paid ? '↩️' : (u.type === 'lend' ? '✍️ Bayad' : '✅');
+      return `
+        <div class="utang-card type-${u.type}${u.paid ? ' paid' : ''}">
+          <span class="utang-badge">${badge}</span>
+          <div class="utang-info">
+            <div class="utang-name">${escHtml(u.person)}${paidBadge}</div>
+            <div class="utang-reason">${escHtml(u.reason)}</div>
+            ${dueStr ? `<div class="utang-due">${dueStr}</div>` : ''}
+            ${sigHtml}
+          </div>
+          <div class="utang-amount">₱${fmt(u.amount)}</div>
+          <div class="utang-actions">
+            <button class="btn-paid" onclick="togglePaid(${u.id})">${toggleLabel}</button>
+            <button class="btn-del-utang" onclick="deleteUtang(${u.id})">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── CUSTOM CONFIRM ──
+  function customConfirm({ icon = '❓', title = 'Sigurado ka?', msg = '', okLabel = 'Oo', onOk }) {
+    document.getElementById('confirmIcon').textContent = icon;
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent = msg;
+    document.getElementById('confirmOk').textContent = okLabel;
+    document.getElementById('confirmOverlay').classList.add('open');
+    document.getElementById('confirmOk').onclick = () => {
+      document.getElementById('confirmOverlay').classList.remove('open');
+      onOk();
+    };
+    document.getElementById('confirmCancel').onclick = () => {
+      document.getElementById('confirmOverlay').classList.remove('open');
+    };
+  }
+
+  // ── HELPERS ──
+  function fmt(n) { return n.toLocaleString('fil-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── INDEXEDDB AUTOSAVE ──
+  const DB_NAME = 'NotebookBudgetDB';
+  const DB_VER  = 1;
+  const STORE   = 'appData';
+  let db = null;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VER);
+      req.onupgradeneeded = e => {
+        e.target.result.createObjectStore(STORE);
+      };
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror   = e => reject(e.target.error);
+    });
+  }
+
+  function dbSet(key, value) {
+    if (!db) return;
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(value, key);
+  }
+
+  function dbGet(key) {
+    return new Promise((resolve) => {
+      if (!db) return resolve(null);
+      const tx  = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = () => resolve(req.result ?? null);
+      req.onerror   = () => resolve(null);
+    });
+  }
+
+  function saveData() {
+    dbSet('balance',          balance);
+    dbSet('transactions',     transactions);
+    dbSet('archivedPeriods',  archivedPeriods);
+    dbSet('currentPeriod',    currentPeriod);
+    dbSet('notes',            notes);
+    dbSet('utangs',           utangs);
+    // Mirror to localStorage as fallback
+    try {
+      localStorage.setItem('balance',         JSON.stringify(balance));
+      localStorage.setItem('transactions',     JSON.stringify(transactions));
+      localStorage.setItem('archivedPeriods',  JSON.stringify(archivedPeriods));
+      localStorage.setItem('currentPeriod',    currentPeriod);
+      localStorage.setItem('notes',            JSON.stringify(notes));
+      localStorage.setItem('utangs',           JSON.stringify(utangs));
+    } catch(e) {}
+  }
+
+  async function loadData() {
+    // Try IndexedDB first
+    const [b, tx2, ap, cp, n, u] = await Promise.all([
+      dbGet('balance'), dbGet('transactions'), dbGet('archivedPeriods'),
+      dbGet('currentPeriod'), dbGet('notes'), dbGet('utangs')
+    ]);
+
+    // Helper: fallback to localStorage if IndexedDB returned null
+    function ls(key, def) {
+      try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; } catch { return def; }
+    }
+
+    balance          = (b          !== null) ? b          : ls('balance', 0);
+    transactions     = (tx2        !== null) ? tx2        : ls('transactions', []);
+    archivedPeriods  = (ap         !== null) ? ap         : ls('archivedPeriods', []);
+    currentPeriod    = (cp         !== null) ? cp         : (localStorage.getItem('currentPeriod') || '');
+    notes            = (n          !== null) ? n          : ls('notes', []);
+    utangs           = (u          !== null) ? u          : ls('utangs', []);
+  }
+
+  // ── BOOT ──
+  openDB().then(async database => {
+    db = database;
+    await loadData();
+    updateBalanceDisplay();
+    renderTransactions();
+    renderNotes();
+    renderUtangs();
+    updatePeriodLabel();
+  }).catch(async () => {
+    // IndexedDB failed (some restrictive WebViews) — use localStorage only
+    balance         = parseFloat(localStorage.getItem('balance') || '0');
+    transactions    = JSON.parse(localStorage.getItem('transactions')    || '[]');
+    archivedPeriods = JSON.parse(localStorage.getItem('archivedPeriods') || '[]');
+    currentPeriod   = localStorage.getItem('currentPeriod') || '';
+    notes           = JSON.parse(localStorage.getItem('notes')   || '[]');
+    utangs          = JSON.parse(localStorage.getItem('utangs')  || '[]');
+    updateBalanceDisplay();
+    renderTransactions();
+    renderNotes();
+    renderUtangs();
+    updatePeriodLabel();
+  });
+
+  // ── LOADING SCREEN ──
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const screen = document.getElementById('loadingScreen');
+      screen.classList.add('hide');
+      setTimeout(() => screen.remove(), 650);
+    }, 1900);
+  });
+</script>
+</body>
+</html>
